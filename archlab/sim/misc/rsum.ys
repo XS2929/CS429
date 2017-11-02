@@ -1,0 +1,43 @@
+	.pos 0
+init:	irmovq Stack,%rsp  #set up stack pointer
+	rrmovq %rsp,%rbp   #set up base pointer
+	call Main
+        halt
+
+# Smple Linked list
+	.align 8
+ele1:	.quad 0x00a
+	.quad ele2 
+ele2:	.quad 0x0b0
+	.quad ele3 
+ele3:	.quad 0xc00
+	.quad 0
+
+Main:	pushq %rbp
+        rrmovq %rsp,%rbp
+	irmovq ele1,%rdx
+	pushq %rdx
+	call rsum	#call rsum function
+	rrmovq %rbp,%rsp
+	popq %rbp
+	ret
+	
+# rsum_list(list_ptr ls) function
+rsum:	pushq %rbp
+	rrmovq %rsp,%rbp
+	pushq %rcx
+	mrmovq 16(%rbp),%rcx
+	andq %rcx,%rcx       #check if ele pointer is NULL
+	je End
+	mrmovq 8(%rcx),%rdx
+	pushq %rdx
+	call rsum
+        mrmovq (%rcx),%rdx
+        addq %rdx, %rax        #val+rsum(ls->next)
+        jmp End
+End:	mrmovq -8(%rbp),%rcx
+        rrmovq %rbp,%rsp
+	popq	%rbp
+	ret
+	.pos 0x400	 
+Stack:	#The stack goes here	

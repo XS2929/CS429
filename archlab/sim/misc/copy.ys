@@ -1,0 +1,60 @@
+       .pos 0
+init:   irmovq Stack, %rsp      # Set up stack pointer
+        rrmovq %rsp, %rbp      # Set up base pointer
+        call Main               # Execute main program
+        halt
+	
+
+.align 8
+# Source block
+src:
+.quad 0x00a
+.quad 0x0b0
+.quad 0xc00
+# Destination block
+dest:
+.quad 0x111
+.quad 0x222
+.quad 0x333
+
+Main:   pushq %rbp
+        rrmovq %rsp,%rbp
+        irmovq $3,%rax
+        pushq %rax
+        irmovq dest,%rax
+        pushq %rax
+        irmovq src,%rax
+        pushq %rax
+        call copy_block
+        rrmovq %rbp,%rsp
+        popq %rbp
+        ret
+
+copy_block: pushq %rbp
+	rrmovq %rsp,%rbp
+	pushq %rbx
+	pushq %rsi
+	mrmovq 16(%rbp),%rcx
+	mrmovq 24(%rbp),%rdx
+	mrmovq 32(%rbp),%rbx
+	xorq %rax,%rax #result=0
+	andq %rbx,%rbx
+	je End
+
+Loop:	mrmovq (%rcx),%rsi
+	rmmovq %rsi,(%rdx)
+	xorq %rsi,%rax #checksum
+	irmovq $8,%rsi
+	addq %rsi,%rcx
+	addq %rsi,%rdx
+	irmovq $-1,%rsi
+	addq %rsi,%rbx
+	jne Loop
+
+End:	rrmovq %rbp,%rsp
+	popq %rbx
+	popq %rsi
+	popq %rbp
+	ret	
+	.pos 0x400
+Stack:  #The stack goes here
